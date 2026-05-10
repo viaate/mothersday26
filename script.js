@@ -42,10 +42,33 @@ const ALL_LEVELS = [
 ];
 
 const ROUNDS_PER_GAME = 5;
+const SEEN_KEY = 'wih_seen'; // localStorage key for the seen-clues set
 
 function pickLevels() {
-  const shuffled = [...ALL_LEVELS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, ROUNDS_PER_GAME);
+  let seen;
+  try {
+    seen = new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'));
+  } catch {
+    seen = new Set();
+  }
+
+  let unseen = ALL_LEVELS.filter(l => !seen.has(l.image));
+
+  // Pool exhausted (or too small to fill a game) -- reset and start the
+  // cycle over so every clue is fair game again.
+  if (unseen.length < ROUNDS_PER_GAME) {
+    seen   = new Set();
+    unseen = [...ALL_LEVELS];
+  }
+
+  const selected = [...unseen].sort(() => Math.random() - 0.5).slice(0, ROUNDS_PER_GAME);
+  selected.forEach(l => seen.add(l.image));
+
+  try {
+    localStorage.setItem(SEEN_KEY, JSON.stringify([...seen]));
+  } catch { /* storage unavailable (private browsing etc.) -- silently continue */ }
+
+  return selected;
 }
 
 // Active levels for this session (set on init)
