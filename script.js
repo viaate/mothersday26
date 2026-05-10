@@ -154,6 +154,8 @@ function initModeScreen() {
 function initGame() {
   LEVELS = pickLevels();
   $('game-mode').classList.remove('hidden');
+  // Memory photos should show at their natural proportions, not cropped.
+  $('photo-bg').classList.toggle('memory-mode', selectedMode === 'memory');
 
   const mapImg    = $('map-img');
   const mapCanvas = $('map-canvas');
@@ -184,7 +186,11 @@ function initGame() {
   });
   $('lock-btn').addEventListener('click', lockGuess);
   $('next-btn').addEventListener('click', nextLevel);
-  $('play-again-btn').addEventListener('click', () => location.reload());
+  // Strip any query params (e.g. ?admin=true) so Play Again always lands
+  // on the mode-selection screen, never the builder.
+  $('play-again-btn').addEventListener('click', () => {
+    window.location.href = window.location.pathname;
+  });
 
   loadLevel(0);
 }

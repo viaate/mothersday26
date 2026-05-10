@@ -72,6 +72,14 @@ button:active { transform: scale(0.97); }
   display: block;
 }
 
+/* Memory photos: show at natural proportions instead of cropping */
+#photo-bg.memory-mode {
+  background: var(--dark);
+}
+#photo-bg.memory-mode #clue-img {
+  object-fit: contain;
+}
+
 
 /* HUD */
 #hud {
