@@ -43,11 +43,29 @@ const ALL_LEVELS = [
 
 const ROUNDS_PER_GAME = 5;
 
-// Memory mode uses the same coordinates as clue mode -- just different photos.
-const MEMORY_LEVELS = ALL_LEVELS.map(l => ({
-  ...l,
-  image: l.image.replace('clue', 'memory'),
-}));
+const MEMORY_LEVELS = [
+  { image: 'assets/memory1.jpg',  x: 0.4506, y: 0.3965 },
+  { image: 'assets/memory2.jpg',  x: 0.4087, y: 0.5039 },
+  { image: 'assets/memory3.jpg',  x: 0.3609, y: 0.6937 },
+  { image: 'assets/memory4.jpg',  x: 0.5494, y: 0.2414 },
+  { image: 'assets/memory5.jpg',  x: 0.2707, y: 0.1759 },
+  { image: 'assets/memory6.jpg',  x: 0.4342, y: 0.1816 },
+  { image: 'assets/memory7.jpg',  x: 0.4082, y: 0.5039 },
+  { image: 'assets/memory8.jpg',  x: 0.7442, y: 0.2923 },
+  { image: 'assets/memory9.jpg',  x: 0.482,  y: 0.4926 },
+  { image: 'assets/memory10.jpg', x: 0.517,  y: 0.2761 },
+  { image: 'assets/memory11.jpg', x: 0.5027, y: 0.2753 },
+  { image: 'assets/memory12.jpg', x: 0.3126, y: 0.6073 },
+  { image: 'assets/memory13.jpg', x: 0.7606, y: 0.5233 },
+  { image: 'assets/memory14.jpg', x: 0.4315, y: 0.5944 },
+  { image: 'assets/memory15.jpg', x: 0.422,  y: 0.5144 },
+  { image: 'assets/memory16.jpg', x: 0.4061, y: 0.5055 },
+  { image: 'assets/memory17.jpg', x: 0.7197, y: 0.2599 },
+  { image: 'assets/memory18.jpg', x: 0.2266, y: 0.096  },
+  { image: 'assets/memory19.jpg', x: 0.345,  y: 0.4893 },
+  { image: 'assets/memory20.jpg', x: 0.492,  y: 0.2543 },
+  { image: 'assets/memory21.jpg', x: 0.3907, y: 0.4377 },
+];
 
 // 'clue' | 'memory' -- set by the mode-selection screen before initGame() runs.
 let selectedMode = 'clue';
