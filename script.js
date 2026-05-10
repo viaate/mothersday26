@@ -1,13 +1,25 @@
-// LEVELS
-// x / y are fractions (0.0 to 1.0) of the rendered floorplan image.
-// Use ?admin=true to open the builder and click to generate precise coordinates,
-// then paste each object in below.
-const LEVELS = [
-  { image: 'assets/clue1.jpg', x: 0.19, y: 0.19 },
-  { image: 'assets/clue2.jpg', x: 0.12, y: 0.52 },
-  { image: 'assets/clue3.jpg', x: 0.33, y: 0.57 },
-  { image: 'assets/clue4.jpg', x: 0.47, y: 0.12 },
+// ALL LEVELS (pool to draw from)
+const ALL_LEVELS = [
+  { image: 'assets/clue1.jpg', x: 0.687,  y: 0.4226 },
+  { image: 'assets/clue2.jpg', x: 0.8193, y: 0.3469 },
+  { image: 'assets/clue3.jpg', x: 0.669,  y: 0.0651 },
+  { image: 'assets/clue4.jpg', x: 0.2891, y: 0.1238 },
+  { image: 'assets/clue5.jpg', x: 0.1934, y: 0.3233 },
+  { image: 'assets/clue6.jpg', x: 0.1594, y: 0.2972 },
+  { image: 'assets/clue7.jpg', x: 0.3688, y: 0.7003 },
+  { image: 'assets/clue8.jpg', x: 0.2051, y: 0.0904 },
+  { image: 'assets/clue9.jpg', x: 0.3549, y: 0.1156 },
 ];
+
+const ROUNDS_PER_GAME = 5;
+
+function pickLevels() {
+  const shuffled = [...ALL_LEVELS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, ROUNDS_PER_GAME);
+}
+
+// Active levels for this session (set on init)
+let LEVELS = [];
 
 // Normalised distance at which score reaches 0
 const MAX_DIST = 0.5;
@@ -38,6 +50,7 @@ function init() {
 // GAME MODE
 
 function initGame() {
+  LEVELS = pickLevels();
   $('game-mode').classList.remove('hidden');
 
   const mapImg    = $('map-img');
