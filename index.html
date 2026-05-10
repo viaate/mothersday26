@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Where in Sara's House? 🏠</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== GAME MODE ===== -->
+  <div id="game-mode" class="hidden">
+
+    <header class="game-header">
+      <h1>Where in Sara's House? 🏠</h1>
+      <div class="header-stats">
+        <span class="stat-badge" id="round-badge">Round 1 / 4</span>
+        <span class="stat-badge score-badge">Score: <strong id="total-score">0</strong></span>
+      </div>
+    </header>
+
+    <main class="game-layout">
+
+      <section class="clue-panel">
+        <p class="panel-label">Where was this photo taken?</p>
+        <img id="clue-img" src="" alt="Clue photo" />
+      </section>
+
+      <section class="map-panel">
+        <p class="panel-label" id="map-hint">Click the floorplan to place your guess</p>
+        <div class="map-wrapper" id="map-wrapper">
+          <img id="map-img" src="assets/map.png" alt="House Floorplan" draggable="false" />
+          <canvas id="map-canvas"></canvas>
+        </div>
+        <div class="action-bar">
+          <button id="lock-btn" disabled>Lock In Guess</button>
+          <div id="result-bar" class="hidden">
+            <span id="result-text"></span>
+            <button id="next-btn">Next Round →</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== END SCREEN ===== -->
+  <div id="end-screen" class="hidden">
+    <div class="end-card">
+      <div class="end-flowers">💐</div>
+      <h1>Happy Mother's Day, Sara!</h1>
+      <div class="final-score-block">
+        <span id="final-score">0</span>
+        <small>/ <span id="max-score">0</span> pts</small>
+      </div>
+      <p id="end-message"></p>
+      <button id="play-again-btn">Play Again</button>
+    </div>
+  </div>
+
+  <!-- ===== CHARLIE EASTER EGG ===== -->
+  <div id="charlie-wrap" aria-hidden="true">
+    <div id="charlie">🐕</div>
+    <div id="charlie-label">Go Charlie!!!</div>
+  </div>
+
+  <!-- ===== BUILDER MODE ===== -->
+  <div id="builder-mode" class="hidden">
+
+    <header class="builder-header">
+      <h1>🔧 Level Builder</h1>
+      <p>Click the map to place a pin → enter the filename → Generate Code.</p>
+    </header>
+
+    <main class="builder-layout">
+
+      <aside class="builder-controls">
+        <label class="builder-label" for="builder-filename">Image filename</label>
+        <input type="text" id="builder-filename" placeholder="clue5.jpg" />
+        <button id="generate-btn" disabled>Generate Code</button>
+
+        <div id="builder-pin-info" class="builder-pin-info hidden">
+          <p>📍 Pin placed:</p>
+          <code id="builder-coord-display"></code>
+        </div>
+
+        <div id="code-output" class="hidden">
+          <p>Copy this into your <code>LEVELS</code> array in <code>script.js</code>:</p>
+          <pre id="code-text"></pre>
+          <button id="copy-btn">Copy to Clipboard</button>
+          <span id="copy-confirm" class="hidden">✓ Copied!</span>
+        </div>
+      </aside>
+
+      <div class="map-wrapper" id="builder-map-wrapper">
+        <img id="builder-map-img" src="assets/map.png" alt="House Floorplan" draggable="false" />
+        <canvas id="builder-canvas"></canvas>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
