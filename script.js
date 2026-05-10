@@ -22,7 +22,9 @@ function pickLevels() {
 let LEVELS = [];
 
 // Zoom controller reference set in initGame, read in onMapClick
-let mapZoom = null;
+let mapZoom        = null;
+let currentMapScale = 1;   // mirrors the live zoom level so drawPin can compensate
+let isPinHovered   = false; // true when cursor is within hover radius of the pending pin
 
 // Normalised distance at which score reaches 0
 const MAX_DIST = 0.5;
@@ -74,8 +76,12 @@ function initGame() {
     drawGamePins();
   }).observe(mapImg);
 
-  mapZoom = initMapZoom($('map-wrapper'), $('map-inner'), mapCanvas);
+  mapZoom = initMapZoom($('map-wrapper'), $('map-inner'), mapCanvas, () => drawGamePins());
   mapCanvas.addEventListener('click', onMapClick);
+  mapCanvas.addEventListener('mousemove', onMapMouseMove);
+  mapCanvas.addEventListener('mouseleave', () => {
+    if (isPinHovered) { isPinHovered = false; drawGamePins(); }
+  });
   $('lock-btn').addEventListener('click', lockGuess);
   $('next-btn').addEventListener('click', nextLevel);
   $('play-again-btn').addEventListener('click', () => location.reload());
@@ -97,6 +103,19 @@ function loadLevel(idx) {
   $('result-overlay').classList.add('hidden');
 
   clearCanvas($('map-canvas'));
+}
+
+function onMapMouseMove(e) {
+  if (!state.pendingPin || state.locked) {
+    if (isPinHovered) { isPinHovered = false; drawGamePins(); }
+    return;
+  }
+  const rect  = $('map-canvas').getBoundingClientRect();
+  const pinSx = state.pendingPin.x * rect.width;
+  const pinSy = state.pendingPin.y * rect.height;
+  const dist  = Math.hypot(e.clientX - rect.left - pinSx, e.clientY - rect.top - pinSy);
+  const next  = dist < 22;
+  if (next !== isPinHovered) { isPinHovered = next; drawGamePins(); }
 }
 
 function onMapClick(e) {
@@ -223,14 +242,19 @@ function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-function drawPin(ctx, w, h, xFrac, yFrac, color, label) {
-  const x = xFrac * w;
-  const y = yFrac * h;
-  const r = 11;
+// scale: current CSS zoom level -- dividing by it keeps the pin a constant screen size.
+// hovered: draw the pin slightly larger when the cursor is near it.
+function drawPin(ctx, w, h, xFrac, yFrac, color, label, { scale = 1, hovered = false } = {}) {
+  const x      = xFrac * w;
+  const y      = yFrac * h;
+  const baseR  = hovered ? 14 : 11;
+  const r      = baseR   / scale;
+  const stem   = 8       / scale;
+  const lw     = 2.5     / scale;
 
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.45)';
-  ctx.shadowBlur  = 10;
+  ctx.shadowBlur  = 10 / scale;
 
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -239,20 +263,20 @@ function drawPin(ctx, w, h, xFrac, yFrac, color, label) {
 
   ctx.shadowBlur  = 0;
   ctx.strokeStyle = '#fff';
-  ctx.lineWidth   = 2.5;
+  ctx.lineWidth   = lw;
   ctx.stroke();
 
   ctx.fillStyle    = '#fff';
-  ctx.font         = `bold ${r}px sans-serif`;
+  ctx.font         = `bold ${Math.round(r * 0.9)}px sans-serif`;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y);
 
   ctx.beginPath();
   ctx.moveTo(x, y + r);
-  ctx.lineTo(x, y + r + 8);
+  ctx.lineTo(x, y + r + stem);
   ctx.strokeStyle = color;
-  ctx.lineWidth   = 2.5;
+  ctx.lineWidth   = lw;
   ctx.stroke();
 
   ctx.restore();
@@ -280,7 +304,8 @@ function drawGamePins() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (state.pendingPin) {
-    drawPin(ctx, w, h, state.pendingPin.x, state.pendingPin.y, cssVar('--red'), '?');
+    drawPin(ctx, w, h, state.pendingPin.x, state.pendingPin.y, cssVar('--red'), '?',
+      { scale: currentMapScale, hovered: isPinHovered });
   }
 }
 
@@ -293,8 +318,8 @@ function drawResultPins(canvas, tx, ty, ux, uy) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawLine(ctx, w, h, ux, uy, tx, ty);
-  drawPin(ctx, w, h, tx, ty, cssVar('--correct'), '✓');
-  drawPin(ctx, w, h, ux, uy, cssVar('--red'),     '✗');
+  drawPin(ctx, w, h, tx, ty, cssVar('--correct'), '✓', { scale: 1 });
+  drawPin(ctx, w, h, ux, uy, cssVar('--red'),     '✗', { scale: 1 });
 }
 
 
@@ -318,7 +343,7 @@ function triggerCharlie() {
 
 // MAP ZOOM / PAN
 
-function initMapZoom(wrapper, inner, canvas) {
+function initMapZoom(wrapper, inner, canvas, onZoomChange) {
   let scale = 1, offX = 0, offY = 0;
   let pointerDown = false, dragMoved = false, lastX = 0, lastY = 0;
   const MIN = 1, MAX = 5;
@@ -332,6 +357,8 @@ function initMapZoom(wrapper, inner, canvas) {
     canvas.style.cursor = scale > 1
       ? (pointerDown ? 'grabbing' : 'grab')
       : 'crosshair';
+    currentMapScale = scale;
+    if (onZoomChange) onZoomChange(scale);
   }
 
   function clamp() {
