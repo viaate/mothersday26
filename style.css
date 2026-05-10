@@ -447,8 +447,8 @@ button:active { transform: scale(0.97); }
 }
 
 @keyframes charlie-bob {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-10px); }
+  from { transform: scaleX(-1) translateY(0); }
+  to   { transform: scaleX(-1) translateY(-10px); }
 }
 
 
