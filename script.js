@@ -62,7 +62,7 @@ function initGame() {
   const mapCanvas = $('map-canvas');
 
   function onMapReady() {
-    syncCanvas(mapCanvas, mapImg);
+    syncCanvas(mapCanvas, mapImg, currentMapScale);
   }
 
   if (mapImg.complete && mapImg.naturalWidth) {
@@ -72,11 +72,14 @@ function initGame() {
   }
 
   new ResizeObserver(() => {
-    syncCanvas(mapCanvas, mapImg);
+    syncCanvas(mapCanvas, mapImg, currentMapScale);
     drawGamePins();
   }).observe(mapImg);
 
-  mapZoom = initMapZoom($('map-wrapper'), $('map-inner'), mapCanvas, () => drawGamePins());
+  mapZoom = initMapZoom($('map-wrapper'), $('map-inner'), mapCanvas, (scale) => {
+    syncCanvas(mapCanvas, $('map-img'), scale);
+    drawGamePins();
+  });
   mapCanvas.addEventListener('click', onMapClick);
   mapCanvas.addEventListener('mousemove', onMapMouseMove);
   mapCanvas.addEventListener('mouseleave', () => {
@@ -213,16 +216,17 @@ function roundMessages(score) {
 
 // CANVAS UTILITIES
 
-function syncCanvas(canvas, img) {
+function syncCanvas(canvas, img, scale = 1) {
   const dpr = window.devicePixelRatio || 1;
-  // Use clientWidth/clientHeight (layout size before CSS transforms)
-  // so the canvas buffer is always sized to the unscaled image dimensions.
-  // getBoundingClientRect includes zoom/hover transforms and would produce
-  // an oversized buffer at high zoom levels.
-  canvas.width  = img.clientWidth  * dpr;
-  canvas.height = img.clientHeight * dpr;
+  // Buffer = CSS pixels x dpr x zoom so it maps 1:1 with physical screen
+  // pixels at every zoom level. The CSS transform on map-inner handles the
+  // visual scaling; we just make sure the canvas has enough pixels to stay
+  // crisp. clientWidth/clientHeight give the unscaled layout size, which is
+  // the right coordinate space for pin drawing.
+  canvas.width  = img.clientWidth  * dpr * scale;
+  canvas.height = img.clientHeight * dpr * scale;
   const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
+  ctx.scale(dpr * scale, dpr * scale);
 }
 
 function clearCanvas(canvas) {

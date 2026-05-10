@@ -177,6 +177,11 @@ button:active { transform: scale(0.97); }
   background: #f5f0ea;
   user-select: none;
   -webkit-user-drag: none;
+  /* Crisp nearest-neighbour upscaling keeps floor-plan lines sharp
+     instead of the browser blurring them when zoomed in */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 .map-wrapper canvas {
