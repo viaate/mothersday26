@@ -140,7 +140,7 @@ button:active { transform: scale(0.97); }
 }
 
 #map-panel:hover {
-  width: 460px;
+  width: 580px;
   transform: scale(1.03);
 }
 
@@ -161,7 +161,7 @@ button:active { transform: scale(0.97); }
   overflow: hidden;
 }
 
-/* zoom/pan container — JS writes transform directly on this element */
+/* zoom/pan container -- JS writes transform directly on this element */
 #map-inner {
   position: relative;
   transform-origin: 0 0;
@@ -441,6 +441,92 @@ button:active { transform: scale(0.97); }
 @keyframes charlie-bob {
   from { transform: translateY(0); }
   to   { transform: translateY(-10px); }
+}
+
+
+/* MODE SELECTION SCREEN */
+#mode-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  animation: fade-in 0.3s ease;
+}
+
+.mode-card {
+  text-align: center;
+  max-width: 680px;
+  width: 92%;
+  padding: 2.5rem 1.5rem;
+}
+
+.mode-flowers {
+  font-size: 2.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.mode-card h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--yellow);
+  margin-bottom: 0.4rem;
+}
+
+.mode-subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-bottom: 2.25rem;
+}
+
+.mode-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+}
+
+.mode-btn {
+  background: var(--dark2);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem 1.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.15s;
+}
+
+.mode-btn:hover {
+  border-color: var(--green);
+  background: var(--dark3);
+  transform: translateY(-4px);
+}
+
+.mode-btn:active { transform: translateY(-1px); }
+
+.mode-btn-icon { font-size: 2.4rem; }
+
+.mode-btn-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.mode-btn-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+@media (max-width: 500px) {
+  .mode-options { grid-template-columns: 1fr; }
+  .mode-card h1 { font-size: 1.6rem; }
 }
 
 

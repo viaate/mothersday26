@@ -42,31 +42,41 @@ const ALL_LEVELS = [
 ];
 
 const ROUNDS_PER_GAME = 5;
-const SEEN_KEY = 'wih_seen'; // localStorage key for the seen-clues set
+
+// Memory mode uses the same coordinates as clue mode -- just different photos.
+const MEMORY_LEVELS = ALL_LEVELS.map(l => ({
+  ...l,
+  image: l.image.replace('clue', 'memory'),
+}));
+
+// 'clue' | 'memory' -- set by the mode-selection screen before initGame() runs.
+let selectedMode = 'clue';
 
 function pickLevels() {
+  const pool = selectedMode === 'memory' ? MEMORY_LEVELS : ALL_LEVELS;
+  const key  = `wih_seen_${selectedMode}`;
+
   let seen;
   try {
-    seen = new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'));
+    seen = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
   } catch {
     seen = new Set();
   }
 
-  let unseen = ALL_LEVELS.filter(l => !seen.has(l.image));
+  let unseen = pool.filter(l => !seen.has(l.image));
 
-  // Pool exhausted (or too small to fill a game) -- reset and start the
-  // cycle over so every clue is fair game again.
+  // Pool exhausted -- reset so every photo is fair game again.
   if (unseen.length < ROUNDS_PER_GAME) {
     seen   = new Set();
-    unseen = [...ALL_LEVELS];
+    unseen = [...pool];
   }
 
   const selected = [...unseen].sort(() => Math.random() - 0.5).slice(0, ROUNDS_PER_GAME);
   selected.forEach(l => seen.add(l.image));
 
   try {
-    localStorage.setItem(SEEN_KEY, JSON.stringify([...seen]));
-  } catch { /* storage unavailable (private browsing etc.) -- silently continue */ }
+    localStorage.setItem(key, JSON.stringify([...seen]));
+  } catch { /* private browsing -- silently continue */ }
 
   return selected;
 }
@@ -100,8 +110,24 @@ function init() {
   if (params.get('admin') === 'true') {
     initBuilder();
   } else {
-    initGame();
+    initModeScreen();
   }
+}
+
+function initModeScreen() {
+  $('mode-screen').classList.remove('hidden');
+
+  $('clue-btn').addEventListener('click', () => {
+    selectedMode = 'clue';
+    $('mode-screen').classList.add('hidden');
+    initGame();
+  }, { once: true });
+
+  $('memory-btn').addEventListener('click', () => {
+    selectedMode = 'memory';
+    $('mode-screen').classList.add('hidden');
+    initGame();
+  }, { once: true });
 }
 
 
