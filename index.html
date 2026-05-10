@@ -3,48 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Where in Sara's House? 🏠</title>
+  <title>Where in Sara's House?</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ===== GAME MODE ===== -->
+  <!-- GAME MODE -->
   <div id="game-mode" class="hidden">
 
-    <header class="game-header">
-      <h1>Where in Sara's House? 🏠</h1>
-      <div class="header-stats">
-        <span class="stat-badge" id="round-badge">Round 1 / 4</span>
-        <span class="stat-badge score-badge">Score: <strong id="total-score">0</strong></span>
+    <!-- Full-screen clue photo -->
+    <div id="photo-bg">
+      <img id="clue-img" alt="Clue photo" draggable="false" />
+    </div>
+
+    <!-- Top HUD -->
+    <div id="hud">
+      <div class="hud-pill">
+        <span class="hud-top">Round</span>
+        <span class="hud-main" id="round-num">1 / 4</span>
       </div>
-    </header>
+      <div class="hud-divider"></div>
+      <div class="hud-pill">
+        <span class="hud-top">Score</span>
+        <span class="hud-main hud-score" id="total-score">0</span>
+      </div>
+    </div>
 
-    <main class="game-layout">
+    <!-- Floating mini-map -->
+    <div id="map-panel">
+      <div class="map-panel-hint" id="map-hint">Click to place your guess</div>
+      <div class="map-wrapper" id="map-wrapper">
+        <img id="map-img" src="assets/map.png" alt="Floorplan" draggable="false" />
+        <canvas id="map-canvas"></canvas>
+      </div>
+      <button id="lock-btn" disabled>Make Guess</button>
+    </div>
 
-      <section class="clue-panel">
-        <p class="panel-label">Where was this photo taken?</p>
-        <img id="clue-img" src="" alt="Clue photo" />
-      </section>
-
-      <section class="map-panel">
-        <p class="panel-label" id="map-hint">Click the floorplan to place your guess</p>
-        <div class="map-wrapper" id="map-wrapper">
-          <img id="map-img" src="assets/map.png" alt="House Floorplan" draggable="false" />
-          <canvas id="map-canvas"></canvas>
-        </div>
-        <div class="action-bar">
-          <button id="lock-btn" disabled>Lock In Guess</button>
-          <div id="result-bar" class="hidden">
-            <span id="result-text"></span>
-            <button id="next-btn">Next Round →</button>
-          </div>
-        </div>
-      </section>
-
-    </main>
   </div>
 
-  <!-- ===== END SCREEN ===== -->
+  <!-- RESULT OVERLAY (shown after each guess) -->
+  <div id="result-overlay" class="hidden">
+    <div class="result-layout">
+      <div class="result-map-wrap" id="result-map-wrap">
+        <img id="result-map-img" src="assets/map.png" alt="Floorplan" draggable="false" />
+        <canvas id="result-canvas"></canvas>
+      </div>
+      <div class="result-card">
+        <div class="result-label">You scored</div>
+        <div class="result-score-num" id="result-score">0</div>
+        <div class="result-max">out of 5,000</div>
+        <div class="result-track">
+          <div class="result-fill" id="result-fill"></div>
+        </div>
+        <p class="result-msg" id="result-msg"></p>
+        <button id="next-btn">Next Round</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
   <div id="end-screen" class="hidden">
     <div class="end-card">
       <div class="end-flowers">💐</div>
@@ -58,45 +75,38 @@
     </div>
   </div>
 
-  <!-- ===== CHARLIE EASTER EGG ===== -->
+  <!-- CHARLIE EASTER EGG -->
   <div id="charlie-wrap" aria-hidden="true">
     <div id="charlie">🐕</div>
     <div id="charlie-label">Go Charlie!!!</div>
   </div>
 
-  <!-- ===== BUILDER MODE ===== -->
+  <!-- BUILDER MODE -->
   <div id="builder-mode" class="hidden">
-
     <header class="builder-header">
-      <h1>🔧 Level Builder</h1>
-      <p>Click the map to place a pin → enter the filename → Generate Code.</p>
+      <h1>Level Builder</h1>
+      <p>Click the map to place a pin, enter the filename, then generate code.</p>
     </header>
-
     <main class="builder-layout">
-
       <aside class="builder-controls">
         <label class="builder-label" for="builder-filename">Image filename</label>
         <input type="text" id="builder-filename" placeholder="clue5.jpg" />
         <button id="generate-btn" disabled>Generate Code</button>
-
         <div id="builder-pin-info" class="builder-pin-info hidden">
-          <p>📍 Pin placed:</p>
+          <p>Pin placed:</p>
           <code id="builder-coord-display"></code>
         </div>
-
         <div id="code-output" class="hidden">
-          <p>Copy this into your <code>LEVELS</code> array in <code>script.js</code>:</p>
+          <p>Paste into <code>LEVELS</code> in <code>script.js</code>:</p>
           <pre id="code-text"></pre>
           <button id="copy-btn">Copy to Clipboard</button>
-          <span id="copy-confirm" class="hidden">✓ Copied!</span>
+          <span id="copy-confirm" class="hidden">Copied!</span>
         </div>
       </aside>
-
-      <div class="map-wrapper" id="builder-map-wrapper">
-        <img id="builder-map-img" src="assets/map.png" alt="House Floorplan" draggable="false" />
+      <div class="map-wrapper builder-map" id="builder-map-wrapper">
+        <img id="builder-map-img" src="assets/map.png" alt="Floorplan" draggable="false" />
         <canvas id="builder-canvas"></canvas>
       </div>
-
     </main>
   </div>
 
