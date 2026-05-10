@@ -21,6 +21,9 @@ function pickLevels() {
 // Active levels for this session (set on init)
 let LEVELS = [];
 
+// Zoom controller reference set in initGame, read in onMapClick
+let mapZoom = null;
+
 // Normalised distance at which score reaches 0
 const MAX_DIST = 0.5;
 
@@ -71,6 +74,7 @@ function initGame() {
     drawGamePins();
   }).observe(mapImg);
 
+  mapZoom = initMapZoom($('map-wrapper'), $('map-inner'), mapCanvas);
   mapCanvas.addEventListener('click', onMapClick);
   $('lock-btn').addEventListener('click', lockGuess);
   $('next-btn').addEventListener('click', nextLevel);
@@ -97,6 +101,7 @@ function loadLevel(idx) {
 
 function onMapClick(e) {
   if (state.locked) return;
+  if (mapZoom && mapZoom.wasDrag()) return;
   state.pendingPin = canvasCoords(e, $('map-canvas'));
   $('lock-btn').disabled = false;
   $('map-hint').textContent = 'Happy with your guess? Lock it in!';
@@ -172,7 +177,7 @@ function showEndScreen() {
   if (pct >= 0.9)      msg = "You know every corner of this home by heart! Trophy earned.";
   else if (pct >= 0.7) msg = "Impressive. You clearly spend quality time in every room.";
   else if (pct >= 0.5) msg = "Not bad! A few more years and you will know every nook.";
-  else                 msg = "Maybe ask Charlie for tips. He has the whole place mapped.";
+  else                 msg = "Maybe ask Charlie for tips. She has the whole place mapped.";
 
   $('end-message').textContent = msg;
   $('end-screen').classList.remove('hidden');
@@ -191,9 +196,12 @@ function roundMessages(score) {
 
 function syncCanvas(canvas, img) {
   const dpr = window.devicePixelRatio || 1;
-  const rect = img.getBoundingClientRect();
-  canvas.width  = rect.width  * dpr;
-  canvas.height = rect.height * dpr;
+  // Use clientWidth/clientHeight (layout size before CSS transforms)
+  // so the canvas buffer is always sized to the unscaled image dimensions.
+  // getBoundingClientRect includes zoom/hover transforms and would produce
+  // an oversized buffer at high zoom levels.
+  canvas.width  = img.clientWidth  * dpr;
+  canvas.height = img.clientHeight * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
 }
@@ -305,6 +313,92 @@ function triggerCharlie() {
   wrap.style.animation = '';
   wrap.classList.remove('hidden');
   setTimeout(() => wrap.classList.add('hidden'), 4200);
+}
+
+
+// MAP ZOOM / PAN
+
+function initMapZoom(wrapper, inner, canvas) {
+  let scale = 1, offX = 0, offY = 0;
+  let pointerDown = false, dragMoved = false, lastX = 0, lastY = 0;
+  const MIN = 1, MAX = 5;
+
+  function apply() {
+    if (scale <= 1) {
+      inner.style.transform = '';
+    } else {
+      inner.style.transform = `translate(${offX}px, ${offY}px) scale(${scale})`;
+    }
+    canvas.style.cursor = scale > 1
+      ? (pointerDown ? 'grabbing' : 'grab')
+      : 'crosshair';
+  }
+
+  function clamp() {
+    if (scale <= 1) { offX = 0; offY = 0; return; }
+    offX = Math.min(0, Math.max(wrapper.clientWidth  * (1 - scale), offX));
+    offY = Math.min(0, Math.max(wrapper.clientHeight * (1 - scale), offY));
+  }
+
+  // Scroll-wheel zoom, centered on the cursor position inside the wrapper
+  wrapper.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect  = wrapper.getBoundingClientRect();
+    const mx    = (e.clientX - rect.left)  / (rect.width  / wrapper.clientWidth);
+    const my    = (e.clientY - rect.top)   / (rect.height / wrapper.clientHeight);
+    const delta = e.deltaY < 0 ? 1.25 : 0.8;
+    const next  = Math.min(MAX, Math.max(MIN, scale * delta));
+    if (next === scale) return;
+    offX   = mx - (mx - offX) * (next / scale);
+    offY   = my - (my - offY) * (next / scale);
+    scale  = next;
+    clamp();
+    apply();
+  }, { passive: false });
+
+  // Pointer drag to pan (works for mouse and touch)
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    pointerDown = true;
+    dragMoved   = false;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+    apply();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!pointerDown) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    if (Math.abs(dx) + Math.abs(dy) > 4) dragMoved = true;
+    if (dragMoved && scale > 1) {
+      offX += dx;
+      offY += dy;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      clamp();
+      apply();
+    }
+  });
+
+  canvas.addEventListener('pointerup', () => {
+    pointerDown = false;
+    apply();
+  });
+
+  // Double-click to reset zoom
+  canvas.addEventListener('dblclick', () => {
+    scale = 1; offX = 0; offY = 0;
+    inner.style.transition = 'transform 0.3s ease';
+    apply();
+    setTimeout(() => { inner.style.transition = ''; }, 320);
+  });
+
+  return {
+    // Returns true if the last pointerdown ended as a drag, not a tap/click
+    wasDrag: () => dragMoved,
+  };
 }
 
 
